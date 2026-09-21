@@ -1,0 +1,21 @@
+name: Feature request
+description: Suggest something Keepenv should do
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Keepenv is deliberately small. Out of scope by design: cloud sync,
+        accounts, teams, remote secret providers, encrypting `.env` files,
+        telemetry, and anything that makes a network request.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do that Keepenv makes hard today?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you have in mind

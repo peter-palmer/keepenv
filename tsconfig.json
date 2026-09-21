@@ -1,0 +1,39 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Strictness */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+
+    /* Paths — resolved relative to this file (TypeScript 7 removed baseUrl). */
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+    "types": ["vite/client"]
+  },
+  // Application code must not reach for Node APIs; tests may, and are
+  // checked by tsconfig.test.json where the node types are available.
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"]
+}

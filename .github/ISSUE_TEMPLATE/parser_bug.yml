@@ -1,0 +1,33 @@
+name: Keepenv changed my file
+description: An edit altered a line it should not have touched
+labels: ["bug", "parser", "priority"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the bug class Keepenv cares most about. Thank you for
+        reporting it.
+
+        **Replace every secret with a placeholder first.** Losslessness bugs
+        reproduce fine with fake values.
+  - type: textarea
+    id: before
+    attributes:
+      label: The file before
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: after
+    attributes:
+      label: The file after
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: action
+    attributes:
+      label: What you changed
+      placeholder: "Edited the value of DATABASE_URL and pressed Cmd+S"
+    validations:
+      required: true

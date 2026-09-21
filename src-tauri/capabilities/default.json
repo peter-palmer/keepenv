@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Minimal capability set for the Keepenv main window. Every filesystem operation goes through Keepenv's own commands, which validate that the target path lives inside a registered project root. No generic filesystem, shell, HTTP or store plugin is granted, and the opener plugin is called from Rust so the webview never gets open-url.",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-destroy",
+    "dialog:allow-open"
+  ]
+}

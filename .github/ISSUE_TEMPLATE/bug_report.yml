@@ -1,0 +1,50 @@
+name: Bug report
+description: Something behaves incorrectly
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Never paste real secrets.** Replace every value with a placeholder
+        before sharing a file. Keepenv bugs reproduce just as well with
+        `KEY=placeholder`.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: env-file
+    attributes:
+      label: The .env file that triggers it
+      description: >
+        The smallest file that reproduces the problem, with all values
+        replaced by placeholders. This is the single most useful thing for
+        parser bugs.
+      render: shell
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a project with the file above
+        2. Edit DATABASE_URL
+        3. Save
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Keepenv version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: "15.2 (Apple Silicon)"
+    validations:
+      required: true

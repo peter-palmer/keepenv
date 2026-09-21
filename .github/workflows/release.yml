@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish macOS app
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and draft the release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: Keepenv ${{ github.ref_name }}
+          releaseDraft: true
+          prerelease: false
+          args: --target universal-apple-darwin
+          releaseBody: |
+            ## Install
+
+            Download the `.dmg` below, open it and drag Keepenv to Applications.
+
+            **Keepenv is not code-signed or notarised yet**, so the first launch
+            needs one extra step: right-click the app and choose **Open**, then
+            confirm. macOS remembers the choice.
+
+            If macOS says the app "is damaged and can't be opened", clear the
+            quarantine flag:
+
+            ```bash
+            xattr -dr com.apple.quarantine /Applications/Keepenv.app
+            ```
+
+            Universal binary — Apple Silicon and Intel.

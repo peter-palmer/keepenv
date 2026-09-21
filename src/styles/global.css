@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+/* Theme is driven by a class on <html> so the user can override the system
+   appearance; `useTheme` keeps it in sync with `prefers-color-scheme`. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --color-app: var(--app);
+  --color-sidebar: var(--sidebar);
+  --color-surface: var(--surface);
+  --color-panel: var(--panel);
+  --color-row: var(--row);
+
+  --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
+
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+
+  /* System fonts only — Keepenv never fetches a remote font. */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui,
+    sans-serif;
+  --font-mono:
+    ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+    monospace;
+}
+
+:root {
+  --app: #e9e9ec;
+  --sidebar: #f1f1f4;
+  --surface: #ffffff;
+  --panel: #fbfbfc;
+  --row: rgb(0 0 0 / 0.035);
+
+  --hairline: rgb(0 0 0 / 0.1);
+  --hairline-strong: rgb(0 0 0 / 0.18);
+
+  --ink: #1d1d1f;
+  --ink-muted: #66666d;
+  --ink-subtle: #95959d;
+
+  --accent: #0a6cff;
+  --accent-soft: rgb(10 108 255 / 0.1);
+  --accent-ink: #ffffff;
+
+  --danger: #cf2637;
+  --danger-soft: rgb(207 38 55 / 0.1);
+  --warn: #a75d06;
+  --warn-soft: rgb(167 93 6 / 0.12);
+  --ok: #10713e;
+  --ok-soft: rgb(16 113 62 / 0.12);
+
+  color-scheme: light;
+}
+
+:root.dark {
+  --app: #161618;
+  --sidebar: #1d1d20;
+  --surface: #202023;
+  --panel: #26262a;
+  --row: rgb(255 255 255 / 0.045);
+
+  --hairline: rgb(255 255 255 / 0.09);
+  --hairline-strong: rgb(255 255 255 / 0.18);
+
+  --ink: #f3f3f6;
+  --ink-muted: #a2a2a9;
+  --ink-subtle: #76767e;
+
+  --accent: #3d8bff;
+  --accent-soft: rgb(61 139 255 / 0.16);
+  --accent-ink: #0a1120;
+
+  --danger: #ff6d7b;
+  --danger-soft: rgb(255 109 123 / 0.14);
+  --warn: #efa44c;
+  --warn-soft: rgb(239 164 76 / 0.14);
+  --ok: #4fd894;
+  --ok-soft: rgb(79 216 148 / 0.14);
+
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--app);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  font-synthesis: none;
+  overflow: hidden;
+}
+
+::selection {
+  background-color: var(--accent-soft);
+}
+
+/* Chrome (sidebar, toolbar, tabs) behaves like native UI rather than a
+   document; variable names and values stay selectable. */
+.app-chrome {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input,
+textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-radius: 6px;
+}
+
+/* Overlay scrollbars, matching macOS. */
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hairline-strong) transparent;
+}
+
+.scroll-thin::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.scroll-thin::-webkit-scrollbar-thumb {
+  background-color: var(--hairline-strong);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
