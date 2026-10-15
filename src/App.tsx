@@ -56,9 +56,34 @@ export function App() {
       .catch(() => setHomeDirectory(null));
   }, []);
 
-  // Restore the last project once both the list and preferences are loaded.
+  const selectProject = useCallback((id: string) => {
+    setActiveProjectId(id);
+    setActiveFile(null);
+  }, []);
+
+  // `keepenv .` from a terminal. Rust has already validated the folder and
+  // registered it, so this only has to refresh the sidebar and select it.
+  const openLaunchTarget = useCallback(
+    (project: Project) => {
+      // Select first: the id is already valid, and waiting for the refresh
+      // would let the restore effect win the race.
+      selectProject(project.id);
+      void projectsController.refresh();
+    },
+    [projectsController, selectProject],
+  );
+
+  const launchChecked = useLaunchTarget(openLaunchTarget);
+
+  // Restore the last project once the list, the preferences and the command
+  // line have all been accounted for.
   useEffect(() => {
-    if (!projectsLoaded || !preferencesLoaded || activeProjectId !== null) {
+    if (
+      !launchChecked ||
+      !projectsLoaded ||
+      !preferencesLoaded ||
+      activeProjectId !== null
+    ) {
       return;
     }
     const remembered = projects.find(
@@ -70,6 +95,7 @@ export function App() {
       setActiveProjectId(next.id);
     }
   }, [
+    launchChecked,
     projectsLoaded,
     preferencesLoaded,
     activeProjectId,
@@ -117,24 +143,6 @@ export function App() {
       });
     return () => dispose?.();
   }, []);
-
-  const selectProject = useCallback((id: string) => {
-    setActiveProjectId(id);
-    setActiveFile(null);
-  }, []);
-
-  // `keepenv .` from a terminal. Rust has already validated the folder and
-  // registered it, so this only has to refresh the sidebar and select it.
-  const openLaunchTarget = useCallback(
-    (project: Project) => {
-      void projectsController.refresh().then(() => {
-        selectProject(project.id);
-      });
-    },
-    [projectsController, selectProject],
-  );
-
-  useLaunchTarget(openLaunchTarget);
 
   const addProject = useCallback(() => {
     void projectsController.addFromPicker().then((project) => {
