@@ -15,6 +15,8 @@ export interface ProjectsController {
   readonly loaded: boolean;
   readonly error: string | null;
   readonly dismissError: () => void;
+  /** Re-reads the project list, e.g. after `keepenv .` registered one. */
+  readonly refresh: () => Promise<void>;
   /** Opens the folder picker; resolves to the project, or `null` if cancelled. */
   readonly addFromPicker: () => Promise<Project | null>;
   readonly rename: (id: string, name: string) => Promise<void>;
@@ -53,6 +55,14 @@ export function useProjects(): ProjectsController {
     return () => {
       active = false;
     };
+  }, []);
+
+  const refresh = useCallback(async () => {
+    try {
+      setProjects(await listProjects());
+    } catch (cause) {
+      setError(messageOf(cause));
+    }
   }, []);
 
   const addFromPicker = useCallback(async (): Promise<Project | null> => {
@@ -118,6 +128,7 @@ export function useProjects(): ProjectsController {
     loaded,
     error,
     dismissError,
+    refresh,
     addFromPicker,
     rename,
     remove,

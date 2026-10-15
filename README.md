@@ -86,6 +86,8 @@ shows it, and writes back to the same file.
   fingerprint of the bytes on disk and stops if something else got there first.
 - **Deleting is reversible.** Removing a variable is undoable; deleting a file
   moves it to the Trash and always asks first.
+- **`keepenv .` from the terminal**, the way you'd open an editor. Switches the
+  open window instead of spawning a second one.
 
 <div align="center">
 <img src=".github/assets/screenshot-conflict.png" alt="Keepenv refusing to overwrite a file that changed on disk" width="760">
@@ -122,6 +124,34 @@ npm run tauri build
 ```
 
 The app lands in `src-tauri/target/release/bundle/macos/Keepenv.app`.
+
+### Open projects from the terminal
+
+Like `code .` or `windsurf .`:
+
+```bash
+./scripts/install-cli.sh
+```
+
+Then, from any project folder:
+
+```bash
+keepenv .          # open this folder
+keepenv ../api     # or a relative one
+keepenv /abs/path  # or an absolute one
+keepenv            # just open Keepenv
+```
+
+The folder is added as a project if it isn't one already, and selected. Run it
+again in the same folder and you get the existing project — no duplicates. If
+Keepenv is already open it switches the current window rather than opening a
+second one, and the shell prompt returns immediately either way.
+
+The installer picks the first directory on your `PATH` that you own, trying
+`/usr/local/bin`, `/opt/homebrew/bin` and `~/.local/bin` in that order, so it
+never needs `sudo`. Override it with `KEEPENV_BIN_DIR=... ./scripts/install-cli.sh`.
+The wrapper also ships inside the app bundle, so this works from a `.dmg`
+install too — and uninstalling is deleting the one file the installer names.
 
 ## How the lossless part works
 

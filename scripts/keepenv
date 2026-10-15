@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+#
+# keepenv — open a project folder in Keepenv from the terminal.
+#
+#   keepenv            open Keepenv
+#   keepenv .          open the current folder as a project
+#   keepenv ../api     open a folder relative to here
+#   keepenv /abs/path  open an absolute path
+#
+# Install with scripts/install-cli.sh.
+
+set -euo pipefail
+
+BUNDLE_ID="com.keepenv.app"
+BIN_REL="Contents/MacOS/keepenv"
+
+usage() {
+  cat <<'USAGE'
+Usage: keepenv [folder]
+
+Opens Keepenv. Given a folder, it is added as a project (if it is not one
+already) and selected. Running it again in the same folder reuses the
+existing project rather than adding a duplicate.
+
+  keepenv            open Keepenv
+  keepenv .          open the current folder
+  keepenv ../api     open a folder relative to here
+  keepenv /abs/path  open an absolute path
+
+Options:
+  -h, --help     show this message
+  -v, --version  show the installed Keepenv version
+USAGE
+}
+
+find_app_binary() {
+  local candidate
+  for candidate in "/Applications/Keepenv.app" "$HOME/Applications/Keepenv.app"; do
+    if [ -x "$candidate/$BIN_REL" ]; then
+      printf '%s\n' "$candidate/$BIN_REL"
+      return 0
+    fi
+  done
+
+  # Fall back to wherever Spotlight has it, for non-standard install locations.
+  if command -v mdfind >/dev/null 2>&1; then
+    candidate=$(mdfind "kMDItemCFBundleIdentifier == '$BUNDLE_ID'" 2>/dev/null | head -n 1 || true)
+    if [ -n "$candidate" ] && [ -x "$candidate/$BIN_REL" ]; then
+      printf '%s\n' "$candidate/$BIN_REL"
+      return 0
+    fi
+  fi
+  return 1
+}
+
+case "${1-}" in
+  -h|--help)
+    usage
+    exit 0
+    ;;
+esac
+
+if ! binary=$(find_app_binary); then
+  printf 'keepenv: Keepenv.app was not found in /Applications or ~/Applications.\n' >&2
+  printf '         Install it from https://github.com/peter-palmer/keepenv/releases\n' >&2
+  exit 1
+fi
+
+case "${1-}" in
+  -v|--version)
+    plist="${binary%/MacOS/keepenv}/Info.plist"
+    version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$plist" 2>/dev/null || echo 'unknown')
+    printf 'keepenv %s\n' "$version"
+    exit 0
+    ;;
+  -*)
+    printf 'keepenv: unknown option: %s\n' "$1" >&2
+    printf "Try 'keepenv --help'.\n" >&2
+    exit 1
+    ;;
+esac
+
+target=""
+if [ "$#" -gt 0 ]; then
+  if [ ! -e "$1" ]; then
+    printf 'keepenv: %s: no such file or directory\n' "$1" >&2
+    exit 1
+  fi
+  if [ ! -d "$1" ]; then
+    printf 'keepenv: %s: not a directory\n' "$1" >&2
+    printf '         Pass the project folder — Keepenv finds the .env files inside it.\n' >&2
+    exit 1
+  fi
+  target=$(cd "$1" && pwd -P)
+fi
+
+# Detached on purpose. With Keepenv closed this process becomes the app; with
+# Keepenv already open it hands over its arguments and exits by itself. Either
+# way the shell prompt comes back immediately.
+if [ -n "$target" ]; then
+  nohup "$binary" "$target" >/dev/null 2>&1 &
+else
+  nohup "$binary" >/dev/null 2>&1 &
+fi
+disown 2>/dev/null || true

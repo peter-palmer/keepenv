@@ -6,6 +6,7 @@
 //! environment file name that must pass
 //! [`crate::paths::is_valid_env_file_name`].
 
+pub mod cli;
 pub mod env_files;
 pub mod git;
 pub mod preferences;

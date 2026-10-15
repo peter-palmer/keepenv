@@ -12,6 +12,7 @@ import type { Project } from "@/services/index.ts";
 import { useEnvEditor } from "@/state/useEnvEditor.ts";
 import { useEnvFiles } from "@/state/useEnvFiles.ts";
 import { useGitStatus } from "@/state/useGitStatus.ts";
+import { useLaunchTarget } from "@/state/useLaunchTarget.ts";
 import { usePreferences } from "@/state/usePreferences.ts";
 import { useProjects } from "@/state/useProjects.ts";
 import { useTheme } from "@/state/useTheme.ts";
@@ -121,6 +122,19 @@ export function App() {
     setActiveProjectId(id);
     setActiveFile(null);
   }, []);
+
+  // `keepenv .` from a terminal. Rust has already validated the folder and
+  // registered it, so this only has to refresh the sidebar and select it.
+  const openLaunchTarget = useCallback(
+    (project: Project) => {
+      void projectsController.refresh().then(() => {
+        selectProject(project.id);
+      });
+    },
+    [projectsController, selectProject],
+  );
+
+  useLaunchTarget(openLaunchTarget);
 
   const addProject = useCallback(() => {
     void projectsController.addFromPicker().then((project) => {

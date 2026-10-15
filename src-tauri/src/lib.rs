@@ -6,10 +6,13 @@
 //!   filesystem, shell or network access. Everything goes through the typed
 //!   commands in [`commands`].
 //! * [`paths`] is the single place that turns untrusted input into a path.
+//! * [`cli`] is the only other place a path enters the app, from the terminal
+//!   wrapper, and it validates the folder before anything else sees it.
 //! * [`store`] persists project metadata and preferences only — never the
 //!   contents of an environment file.
 //! * Nothing in this crate performs a network request.
 
+mod cli;
 mod commands;
 mod env_files;
 mod error;
@@ -19,13 +22,42 @@ mod paths;
 mod store;
 mod util;
 
-use tauri::Manager;
+use std::path::PathBuf;
 
+use tauri::{Emitter, Manager};
+
+use crate::cli::PendingLaunch;
 use crate::store::AppState;
+
+/// Emitted when `keepenv <folder>` runs while the app is already open.
+const LAUNCH_TARGET_EVENT: &str = "keepenv://launch-target";
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        // Must be registered first. A second `keepenv .` hands its arguments
+        // to the running app and exits, instead of opening another window.
+        .plugin(tauri_plugin_single_instance::init(|app, argv, cwd| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+
+            let working_directory = PathBuf::from(&cwd);
+            let Some(path) = cli::project_path_from_args(&argv, Some(&working_directory)) else {
+                return;
+            };
+
+            let registered = {
+                let state = app.state::<AppState>();
+                let mut store = state.store();
+                store.add_project(&path.to_string_lossy())
+            };
+            if let Ok(project) = registered {
+                let _ = app.emit(LAUNCH_TARGET_EVENT, project);
+            }
+        }))
         // Native folder picker. No other dialog permission is granted.
         .plugin(tauri_plugin_dialog::init())
         // Used from Rust only, to reveal items in Finder.
@@ -34,6 +66,16 @@ pub fn run() {
             let config_dir = app.path().app_config_dir()?;
             std::fs::create_dir_all(&config_dir)?;
             app.manage(AppState::new(&config_dir));
+            app.manage(PendingLaunch::default());
+
+            // A cold start parses its own arguments; the webview drains them
+            // once it mounts.
+            let args: Vec<String> = std::env::args().collect();
+            let working_directory = std::env::current_dir().ok();
+            if let Some(path) = cli::project_path_from_args(&args, working_directory.as_deref()) {
+                app.state::<PendingLaunch>().set(path);
+            }
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -54,6 +96,7 @@ pub fn run() {
             commands::system::reveal_env_file,
             commands::system::project_path,
             commands::system::home_directory,
+            commands::cli::take_launch_target,
         ])
         .run(tauri::generate_context!())
         .expect("error while running Keepenv");
