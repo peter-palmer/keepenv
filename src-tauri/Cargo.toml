@@ -1,6 +1,6 @@
 [package]
 name = "keepenv"
-version = "0.1.0"
+version = "0.2.0"
 description = "Local-only environment file manager for software projects"
 authors = ["Keepenv"]
 edition = "2021"
